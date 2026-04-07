@@ -80,6 +80,96 @@ After the task is complete, commit, and push:
 
 ---
 
+## Project Structure: Domain-Driven Design with Cascading CLAUDE.md
+
+CRAFT isn't just a workflow — it assumes a specific project structure that makes AI agents dramatically more effective. The key idea: **organize code by domain, and give each domain its own CLAUDE.md.**
+
+### Why This Matters for AI
+
+An AI agent's biggest limitation is context. When you dump an entire codebase into a conversation, the agent drowns in irrelevant details. Domain-driven structure solves this:
+
+- The **root CLAUDE.md** gives the agent the big picture — architecture invariants, code standards, project conventions
+- The **domain CLAUDE.md** gives the agent the local picture — what this module does, what patterns it uses, what lessons have been learned here
+- The agent reads both, and now it has exactly the context it needs — no more, no less
+
+### The Structure
+
+```
+project/
+├── CLAUDE.md                    # Root: architecture, invariants, workflow, standards
+├── specs/                       # Design docs, specs, decision logs
+├── app/
+│   ├── core/                    # Shared infrastructure (models, config, DB, etc.)
+│   │   └── CLAUDE.md            # Core conventions, available utilities
+│   ├── domain-a/
+│   │   └── CLAUDE.md            # Domain A scope, patterns, lessons learned
+│   ├── domain-b/
+│   │   └── CLAUDE.md            # Domain B scope, patterns, lessons learned
+│   └── domain-c/
+│       └── CLAUDE.md            # Domain C scope, patterns, lessons learned
+└── tests/
+```
+
+### What Goes Where
+
+**Root CLAUDE.md** — the constitution. Things that apply everywhere:
+- Tech stack and key dependencies
+- Architecture invariants (non-negotiable rules)
+- Development workflow (CRAFT phases)
+- Code standards (formatting, naming, testing conventions)
+- Project structure overview
+- CI/CD pipeline description
+
+**Domain CLAUDE.md** — the local handbook. Things specific to this module:
+- What the domain owns and its boundaries
+- Implemented features and their signatures
+- Patterns and conventions established during implementation
+- Lessons learned — gotchas, surprising behavior, non-obvious edge cases
+- Dependencies on other domains (always through `core/`)
+- Relevant skills or reference material
+
+### The Cascade
+
+When an agent works on a file in `domain-b/`, it reads:
+
+1. **Root CLAUDE.md** → "Here are the project-wide rules"
+2. **domain-b/CLAUDE.md** → "Here's what's specific to this area"
+
+This cascading context is what makes the Transform phase so powerful. Every time you complete a task and update the domain's CLAUDE.md, you're teaching future agents (and future you) what they need to know. The documentation compounds:
+
+- **Week 1:** Domain CLAUDE.md says "TODO: write after implementation"
+- **Week 4:** Domain CLAUDE.md has patterns, gotchas, and conventions from 3 completed tasks
+- **Week 8:** Domain CLAUDE.md is a genuine handbook that prevents repeated mistakes
+
+### Architecture Invariants
+
+The root CLAUDE.md should include a section of non-negotiable rules — things that, if violated, indicate a structural problem. Examples:
+
+```markdown
+## Architecture Invariants
+
+These are non-negotiable. If a change violates one, stop and reconsider.
+
+1. All DB queries filter by tenant_id. No exceptions.
+2. All external API calls go through adapters. No direct SDK usage in business logic.
+3. Cross-domain imports go through core/. Never import from one domain into another.
+4. Credentials are never logged, cached, or stored in plaintext.
+```
+
+The planner checks these during Conceptualize. The reviewer checks them during Assess. They're the guardrails that keep parallel work from creating architectural drift.
+
+### Domain Boundaries
+
+The golden rule: **domains don't import from each other.** If domain A needs something from domain B, it goes through `core/`. This means:
+
+- Domains can be developed in parallel without merge conflicts
+- Each domain can be understood in isolation
+- The reviewer agent can check boundary violations mechanically
+
+If you find yourself wanting to import across domains, that's a signal the shared code belongs in `core/`.
+
+---
+
 ## When to Use Full vs Lite CRAFT
 
 | Scenario | Flow |
@@ -129,10 +219,12 @@ cp .claude/commands/pr-fixup.md /path/to/your-project/.claude/commands/
 
 ## Philosophy
 
-CRAFT is built on three beliefs:
+CRAFT is built on four beliefs:
 
 1. **Planning is not overhead.** It's the cheapest place to catch mistakes. The cost of a wrong plan is minutes; the cost of wrong code is hours.
 
 2. **Self-review is impossible.** You can't see your own blind spots. A separate review agent with fresh context catches what you miss.
 
-3. **Knowledge compounds.** Every task should leave the codebase slightly smarter than it found it. The Transform phase is what separates a codebase that fights you from one that helps you.
+3. **Context is the bottleneck.** AI agents are only as good as the context they receive. Domain-driven structure with cascading CLAUDE.md files gives agents precisely the context they need — project-wide rules from the root, domain-specific knowledge from the local file. Without this structure, agents either drown in irrelevant details or miss critical constraints.
+
+4. **Knowledge compounds.** Every task should leave the codebase slightly smarter than it found it. The Transform phase is what separates a codebase that fights you from one that helps you. Each domain's CLAUDE.md evolves from a placeholder into real institutional knowledge — and that knowledge makes every subsequent task faster and less error-prone.
