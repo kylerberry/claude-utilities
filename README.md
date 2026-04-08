@@ -1,6 +1,6 @@
 # Claude Utilities
 
-Reusable agents, commands, and workflows for [Claude Code](https://claude.ai/claude-code).
+Reusable commands, skills, and workflows for [Claude Code](https://claude.ai/claude-code).
 
 ## CRAFTS Workflow
 
@@ -8,34 +8,33 @@ This repo is built around **CRAFTS** — a structured development workflow for A
 
 **Conceptualize > Render > Assess > Fix > Tighten > Sharpen**
 
-See [CRAFT.md](CRAFT.md) for the full methodology, philosophy, and setup instructions.
+See [CRAFTS.md](CRAFTS.md) for the full methodology, philosophy, and setup instructions.
 
 ## What's Included
 
 ```
 .claude/
-├── agents/
-│   ├── planner.md      # Conceptualize phase — plans before code is written
-│   └── reviewer.md     # Reference — Assess phase now uses /simplify skill
-├── commands/
-│   └── pr-fixup.md     # Post-push PR cleanup (conflicts, comments, CI)
 ├── skills/
 │   └── security-scanning-security-hardening/
 │       └── SKILL.md    # Tighten phase — multi-layer security hardening
+├── commands/
+│   └── pr-fixup.md     # Post-push PR cleanup (conflicts, comments, CI)
 ```
 
-### Agents
+### Built-in Claude Code Tools Used
 
-| Agent | CRAFTS Phase | Purpose |
-|-------|-------------|---------|
-| `planner` | **C**onceptualize | Reads specs and context, produces scope, test cases, implementation plan, and risks |
+CRAFTS leans on Claude Code's built-in capabilities rather than custom agents:
 
-### Skills
+| Tool | CRAFTS Phase | Purpose |
+|------|-------------|---------|
+| `/plan` | **C**onceptualize | Built-in planning agent — scope, test cases, implementation plan, risks |
+| `/simplify` | **A**ssess | Built-in skill — reviews code for quality, reuse, and efficiency |
+
+### Bundled Skills
 
 | Skill | CRAFTS Phase | Purpose |
 |-------|-------------|---------|
-| `/simplify` | **A**ssess | Reviews changed code for reuse, quality, and efficiency |
-| `security-scanning-security-hardening` | **T**ighten | Scans diff for security vulnerabilities and OWASP issues |
+| `security-scanning-security-hardening` | **T**ighten | Multi-layer security hardening across app, infra, and compliance |
 
 ### Commands
 
@@ -48,22 +47,19 @@ See [CRAFT.md](CRAFT.md) for the full methodology, philosophy, and setup instruc
 Copy what you need into your project:
 
 ```bash
-# Everything
-cp -r .claude/ /path/to/your-project/.claude/
+# The security hardening skill
+cp -r .claude/skills/ /path/to/your-project/.claude/skills/
 
-# Just the planner agent
-cp -r .claude/agents/planner.md /path/to/your-project/.claude/agents/
-
-# Just the pr-fixup command
+# The pr-fixup command
 mkdir -p /path/to/your-project/.claude/commands
 cp .claude/commands/pr-fixup.md /path/to/your-project/.claude/commands/
 
 # Or symlink for auto-updates
-ln -s /path/to/claude-utilities/.claude/agents/planner.md /path/to/your-project/.claude/agents/
+ln -s /path/to/claude-utilities/.claude/skills/ /path/to/your-project/.claude/skills
 ln -s /path/to/claude-utilities/.claude/commands/pr-fixup.md /path/to/your-project/.claude/commands/
 ```
 
-Then add the CRAFTS workflow to your project's `CLAUDE.md` — see [CRAFT.md § Setting Up](CRAFT.md#setting-up-crafts-in-your-project) for the snippet.
+Then add the CRAFTS workflow to your project's `CLAUDE.md` — see [CRAFTS.md § Setting Up](CRAFTS.md#setting-up-crafts-in-your-project) for the snippet.
 
 ## License
 
