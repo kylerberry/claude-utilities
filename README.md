@@ -61,13 +61,24 @@ Each phase uses Claude Code's built-in tools rather than custom agents — `/pla
 │   └── pr-fixup.md                             # Post-push PR cleanup
 ```
 
+### `/pr-fixup` — PR Cleanup Command
+
+A Claude Code slash command that unblocks a PR in one shot. Run `/pr-fixup [pr-number]` (or just `/pr-fixup` on the current branch) and it will:
+
+1. **Resolve merge conflicts** — merges the base branch, reads both sides, preserves intent of both changes
+2. **Address review comments** — fixes valid feedback, drafts replies for anything it disagrees with, never silently ignores
+3. **Fix CI failures** — diagnoses lint, type check, test, and build failures and fixes the root cause (not just the symptom)
+4. **Output a summary** — tells you exactly what was fixed, what's still failing, and whether the PR is ready to merge
+
+Pairs naturally with the end of a CRAFTS Sharpen phase.
+
 ### Copy into your project
 
 ```bash
 # Security hardening skill (required for Tighten phase)
 cp -r .claude/skills/ /path/to/your-project/.claude/skills/
 
-# PR cleanup command (optional)
+# PR cleanup command (optional but recommended)
 cp .claude/commands/pr-fixup.md /path/to/your-project/.claude/commands/
 ```
 
