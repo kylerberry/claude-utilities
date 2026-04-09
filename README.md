@@ -1,73 +1,99 @@
 # Claude Utilities
 
-Reusable commands, skills, and workflows for [Claude Code](https://claude.ai/claude-code).
+A methodology and toolkit for building software with AI coding agents — from raw idea to shipped product.
 
-## ORACLE: From Idea to Executing CRAFTS
+Two frameworks, used in sequence:
 
-Before writing code, there's a process for taking a raw idea to a properly scaffolded project:
+1. **ORACLE** — structured kickoff process. Takes a raw idea through adversarial refinement, spec creation, and project scaffolding before any code is written.
+2. **CRAFTS** — execution workflow. A disciplined phase-by-phase loop for writing, reviewing, and hardening code.
+
+---
+
+## ORACLE
 
 **Originate > Red-Team > Amend > Constitution > Layout > Execute**
 
-See [ORACLE.md](ORACLE.md) for the full process.
+Most AI-assisted projects fail not because of bad code, but because of bad thinking upstream. ORACLE is the process that fixes this — it forces the hard questions before a line of code exists.
 
-## CRAFTS Workflow
+| Phase | What happens |
+|-------|-------------|
+| **O**riginate | Riff the raw idea with LLM A into a v1 proposal |
+| **R**ed-Team | Switch to LLM B — adversarial review of the proposal |
+| **A**mend | Return to LLM A — reconcile, fill gaps, harden. Repeat R→A until it holds |
+| **C**onstitution | Turn the proposal into a thorough product spec — the law of the project |
+| **L**ayout | Map every skill and domain the codebase will need |
+| **E**xecute | Init CLAUDE.md, install skills, generate a phased task list, begin CRAFTS |
 
-CRAFTS is the execution workflow — what you run on each task once the project is initialized:
+The multi-LLM red-teaming loop (R→A) is the core insight: a different model with no stake in the idea will surface assumptions your original agent rationalized away.
+
+**→ [ORACLE.md](ORACLE.md)** — prompt template, ready to paste into a new conversation.
+
+---
+
+## CRAFTS
 
 **Conceptualize > Render > Assess > Fix > Tighten > Sharpen**
 
-See [CRAFTS.md](CRAFTS.md) for the full methodology, philosophy, and setup instructions.
+CRAFTS is the loop you run on every task. It prevents the most common AI coding failure: generating plausible-looking code that doesn't hold up under review, security scrutiny, or real use.
+
+| Phase | What happens |
+|-------|-------------|
+| **C**onceptualize | `/plan` — scope, test cases, implementation plan, risks. Human reviews before proceeding. |
+| **R**ender | TDD strictly. Red → Green → Refactor. No implementation before a failing test. |
+| **A**ssess | `/simplify` — fresh-context review of the diff for quality, reuse, efficiency |
+| **F**ix | Address blocking issues from Assess |
+| **T**ighten | `security-scanning-security-hardening` — scan the diff, fix all findings |
+| **S**harpen | Commit, push, update domain CLAUDE.md with lessons learned |
+
+Each phase uses Claude Code's built-in tools rather than custom agents — `/plan` for Conceptualize, `/simplify` for Assess. The security hardening skill is the only external dependency.
+
+**→ [CRAFTS.md](CRAFTS.md)** — CLAUDE.md drop-in, ready to copy into your project.
+
+---
 
 ## What's Included
 
 ```
 .claude/
 ├── skills/
-│   └── security-scanning-security-hardening/
-│       └── SKILL.md    # Tighten phase — multi-layer security hardening
+│   └── security-scanning-security-hardening/   # Tighten phase
 ├── commands/
-│   └── pr-fixup.md     # Post-push PR cleanup (conflicts, comments, CI)
+│   └── pr-fixup.md                             # Post-push PR cleanup
 ```
 
-### Built-in Claude Code Tools Used
-
-CRAFTS leans on Claude Code's built-in capabilities rather than custom agents:
-
-| Tool | CRAFTS Phase | Purpose |
-|------|-------------|---------|
-| `/plan` | **C**onceptualize | Built-in planning agent — scope, test cases, implementation plan, risks |
-| `/simplify` | **A**ssess | Built-in skill — reviews code for quality, reuse, and efficiency |
-
-### Bundled Skills
-
-| Skill | CRAFTS Phase | Purpose |
-|-------|-------------|---------|
-| `security-scanning-security-hardening` | **T**ighten | Multi-layer security hardening across app, infra, and compliance |
-
-### Commands
-
-| Command | Purpose |
-|---------|---------|
-| `/pr-fixup [pr]` | Checks a PR for merge conflicts, review comments, and CI failures — fixes them in order |
-
-## Quick Start
-
-Copy what you need into your project:
+### Copy into your project
 
 ```bash
-# The security hardening skill
+# Security hardening skill (required for Tighten phase)
 cp -r .claude/skills/ /path/to/your-project/.claude/skills/
 
-# The pr-fixup command
-mkdir -p /path/to/your-project/.claude/commands
+# PR cleanup command (optional)
 cp .claude/commands/pr-fixup.md /path/to/your-project/.claude/commands/
-
-# Or symlink for auto-updates
-ln -s /path/to/claude-utilities/.claude/skills/ /path/to/your-project/.claude/skills
-ln -s /path/to/claude-utilities/.claude/commands/pr-fixup.md /path/to/your-project/.claude/commands/
 ```
 
-Then add the CRAFTS workflow to your project's `CLAUDE.md` — see [CRAFTS.md § Setting Up](CRAFTS.md#setting-up-crafts-in-your-project) for the snippet.
+### Add CRAFTS to your CLAUDE.md
+
+See [CRAFTS.md](CRAFTS.md) for the drop-in block.
+
+### Start a new project with ORACLE
+
+See [ORACLE.md](ORACLE.md) for the prompt template.
+
+---
+
+## Philosophy
+
+**Planning beats replanning.** Wrong assumptions caught before code exists cost minutes. Caught after implementation they cost hours, sometimes days. Both ORACLE and CRAFTS front-load the thinking.
+
+**Different models catch different things.** ORACLE's red-team phase deliberately switches LLMs because a fresh model with no context has no incentive to rationalize your weak assumptions. It will find gaps your original model talked itself out of.
+
+**Self-review is impossible.** The builder can't see their own blind spots. CRAFTS uses `/simplify` — a fresh-context review pass — specifically because the agent that wrote the code is the worst reviewer of it.
+
+**Security is a gate, not an afterthought.** The Tighten phase runs before every commit. Vulnerabilities found pre-commit cost minutes. Found post-deploy they cost far more.
+
+**Knowledge compounds.** The Sharpen phase updates domain CLAUDE.md files with lessons learned after every task. Week 1 those files are stubs. Week 8 they're handbooks that make every subsequent task faster and less error-prone.
+
+---
 
 ## License
 

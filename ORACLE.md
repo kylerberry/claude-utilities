@@ -1,184 +1,112 @@
-# ORACLE: From Idea to Executing CRAFTS
+# ORACLE — Project Kickoff Prompt Template
 
-**Originate > Red-Team > Amend > Constitution > Layout > Execute**
-
-A repeatable process for taking a raw idea all the way through to shipping — idea to spec to scaffolded project to running CRAFTS.
+Paste this into a new conversation with Claude (or your preferred LLM) to kick off a project using the ORACLE process.
 
 ---
 
-## Why This Matters
+```
+You are helping me take a raw idea through the ORACLE process — a structured
+kickoff that produces a product spec, skill map, and task list before any code
+is written.
 
-Most projects fail in the first hour — not because of bad code, but because of bad thinking. Jumping straight from idea to implementation skips the steps that surface wrong assumptions, missing requirements, and architectural decisions that are cheap to change on paper and expensive to change in code.
+The phases are:
+  O — Originate    (we do this now, together)
+  R — Red-Team     (I'll switch to a different LLM and return with the critique)
+  A — Amend        (we reconcile the critique and harden the proposal)
+  C — Constitution (you produce a thorough product spec)
+  L — Layout       (you map the skills and domains the project needs)
+  E — Execute      (you init CLAUDE.md, generate a task list, and we begin CRAFTS)
 
-ORACLE doesn't hand off to CRAFTS — it ends with CRAFTS already running.
+Work through one phase at a time. Wait for me to confirm before moving to the next.
 
 ---
 
-## The Phases
+O — ORIGINATE
 
-### O — Originate
-
-**Tool:** Claude or Gemini (conversational, unconstrained)
-**Purpose:** Spark the genesis of the idea — active co-creation, not passive transcription.
-
-Don't start with structure — start with thinking. Bring your raw idea into a conversation and push the agent to help you develop it into a coherent v1 proposal:
+Help me develop this idea into a v1 proposal. Ask clarifying questions, push
+back on vague assumptions, and help me think through:
 - What problem does this actually solve?
 - Who is it for?
-- What does success look like?
-- What are the rough edges?
+- What does success look like in 90 days?
+- What are the obvious risks or rough edges?
 
-Save the output as `specs/proposal.md`.
-
-**Goal:** A rough but honest first draft — not polished, not complete. Good enough to red-team.
+When we're satisfied, save the output to specs/proposal.md.
 
 ---
 
-### R — Red-Team
+R — RED-TEAM
 
-**Tool:** A different agent than Originate (switch Claude → Gemini or vice versa)
-**Purpose:** Stress-test the proposal with an adversarial model that has no stake in the idea.
+I will now switch to a different LLM (e.g. Gemini if we started with Claude,
+or vice versa) and ask it to adversarially review the proposal. I'll return
+with its critique.
 
-Fresh model, no prior context. Hand it the proposal and ask it to attack it:
-- What assumptions are unvalidated?
-- What's missing?
-- What could go wrong?
-- What would a skeptical stakeholder push back on?
-
-Use the critique to update `specs/proposal.md`.
-
-**Goal:** A proposal that has survived adversarial review. Weaknesses surfaced now cost nothing.
+(Pause — I'll be back with the red-team output.)
 
 ---
 
-### A — Amend
+A — AMEND
 
-**Tool:** Return to your Originate agent
-**Purpose:** Close the loop — reconcile the critique and polish the concept.
+I'm back. Here is the red-team critique: [PASTE CRITIQUE]
 
-Hand it both the updated proposal and the red-team critique. Ask it to reconcile tensions, fill gaps, and produce a stronger version. Repeat the R → A loop as many times as needed until the proposal holds up.
-
-Update `specs/proposal.md`.
-
-**Goal:** A proposal hardened by both generative thinking and adversarial feedback. This becomes your source of truth.
+Reconcile the tensions, fill the gaps, and produce a stronger version of the
+proposal. Update specs/proposal.md. We can repeat R → A as many times as
+needed until the proposal holds up.
 
 ---
 
-### C — Constitution
+C — CONSTITUTION
 
-**Tool:** Claude
-**Purpose:** Turn the proposal into the law of the project — the rules, scope, and requirements that everything else is built on.
-
-Ask Claude to produce a thorough product spec from the refined proposal:
+Using the hardened proposal, produce a thorough product spec. Include:
 - Problem statement and goals
 - User stories or jobs-to-be-done
-- Feature list with scope boundaries (in/out)
+- Feature list with explicit in/out scope
 - Non-functional requirements (performance, security, scale)
 - Open questions and decisions still needed
 
-Save as `specs/spec.md`.
-
-**Goal:** A spec detailed enough that a developer (or agent) could build from it without inventing requirements.
-
----
-
-### L — Layout
-
-**Tool:** Claude + `skills.sh` + `find-skills` skill
-**Purpose:** Map the domains and stack — visually and structurally lay out what the project needs and where.
-
-Using the spec as input, ask Claude to identify all relevant skills and map them to the domains of the future codebase. For each skill:
-- **Reasoning** — why this skill is relevant
-- **Trust factor** — community vs. verified, complexity, risk
-- **Domain mapping** — which part of the codebase this skill serves
-
-Save as `specs/skill-map.md`.
-
-**Example entry:**
-```markdown
-## security-scanning-security-hardening
-- **Relevance:** All backend endpoints handle user data; hardening required before each commit
-- **Trust:** Community skill, well-documented, 4-phase process — high trust
-- **Domain:** `app/api/`, `app/auth/`
-```
-
-**Goal:** Know exactly which skills you're bringing in, why, and where they apply — before installing anything.
+Save to specs/spec.md. This is the law of the project — everything we build
+will reference it.
 
 ---
 
-### E — Execute
+L — LAYOUT
 
-**Tool:** Claude (init) + Claude Opus (task list) + CRAFTS
-**Purpose:** Initialize the environment, build the task list, and start shipping — Execute is where ORACLE ends and CRAFTS begins running.
+Using specs/spec.md, identify all relevant Claude Code skills for this project
+using the find-skills skill. For each skill:
+- Reasoning — why it's relevant to this project
+- Trust factor — community vs. verified, complexity, risk level
+- Domain mapping — which part of the future codebase it serves
 
-**1. Initialize the project context**
+Save to specs/skill-map.md.
 
-Ask Claude to scaffold the root `CLAUDE.md` — tech stack, architecture invariants, domain structure, CRAFTS workflow reference. Create domain-level `CLAUDE.md` stubs for each planned domain. Install skills from `specs/skill-map.md`:
+---
 
-```bash
-cp -r /path/to/claude-utilities/.claude/skills/ .claude/skills/
+E — EXECUTE
+
+1. Scaffold the root CLAUDE.md with: tech stack, architecture invariants,
+   domain structure, and the CRAFTS workflow.
+2. Create domain-level CLAUDE.md stubs for each planned domain.
+3. Install skills from specs/skill-map.md.
+4. Using specs/spec.md, generate a thorough phased task list with Claude Opus.
+   Organize by phase: foundation → core features → polish → launch.
+   Each task should be completable in a single CRAFTS session.
+   Save to specs/tasks.md.
+5. Pick the first task from specs/tasks.md and begin CRAFTS.
+
+---
+
+My idea: [YOUR IDEA HERE]
 ```
-
-**2. Generate the task list (use Opus)**
-
-Hand Claude Opus the spec and ask it to produce a thorough, phased task list:
-
-> "Using specs/spec.md, generate a thorough, phased task list for this project. Organize by phase (foundation → core features → polish → launch). Each task should be concrete enough to execute in a single CRAFTS session. Save to specs/tasks.md."
-
-```markdown
-## Phase 1: Foundation
-- [ ] Set up database schema and migrations
-- [ ] Scaffold auth system
-- [ ] Configure CI/CD pipeline
-
-## Phase 2: Core Features
-- [ ] Build X
-- [ ] Build Y
-```
-
-**3. Run CRAFTS**
-
-Pick the first unchecked task from `specs/tasks.md` and execute it through the full CRAFTS flow:
-
-**Conceptualize → Render → Assess → Fix → Tighten → Sharpen**
-
-Check off tasks as they complete. Update domain `CLAUDE.md` files during the Sharpen phase. Repeat until shipped.
-
-See [CRAFTS.md](CRAFTS.md) for the full workflow.
-
-**Goal:** A running project — not a ready-to-start one.
 
 ---
 
 ## Output Checklist
 
-Before handing off to CRAFTS, you should have:
+Before CRAFTS begins, you should have:
 
 - [ ] `specs/proposal.md` — refined, red-teamed proposal
 - [ ] `specs/spec.md` — product spec (the Constitution)
 - [ ] `specs/skill-map.md` — skills mapped to domains with trust ratings
-- [ ] `specs/tasks.md` — phased task list (generated by Opus)
+- [ ] `specs/tasks.md` — phased task list
 - [ ] `CLAUDE.md` — root project context initialized
 - [ ] Domain `CLAUDE.md` stubs created
 - [ ] Skills installed
-
----
-
-## The Full Arc
-
-```
-Raw Idea
-   ↓
-Originate     →  specs/proposal.md (v1)
-   ↓
-Red-Team      →  Adversarial critique
-   ↓
-Amend         →  specs/proposal.md (hardened)
-   ↓
-Constitution  →  specs/spec.md
-   ↓
-Layout        →  specs/skill-map.md
-   ↓
-Execute       →  CLAUDE.md + skills + specs/tasks.md + CRAFTS running
-   ↓
-              →  Shipped software
-```
