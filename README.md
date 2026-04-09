@@ -2,9 +2,17 @@
 
 Reusable commands, skills, and workflows for [Claude Code](https://claude.ai/claude-code).
 
+## KICKOFF: From Idea to Executing CRAFTS
+
+Before writing code, there's a process for taking a raw idea to a properly scaffolded project:
+
+**Riff → Red-Team → Refine → Spec → Skill Map → Init → Task List → Execute**
+
+See [KICKOFF.md](KICKOFF.md) for the full process.
+
 ## CRAFTS Workflow
 
-This repo is built around **CRAFTS** — a structured development workflow for AI-assisted coding:
+CRAFTS is the execution workflow — what you run on each task once the project is initialized:
 
 **Conceptualize > Render > Assess > Fix > Tighten > Sharpen**
 
