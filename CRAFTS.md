@@ -23,18 +23,19 @@ Claude Code ships with a capable planning agent. Use it to produce:
 
 **When to skip:** Config changes, scaffolding, obvious single-file fixes. If you can hold the entire change in your head, you don't need a plan.
 
-### R — Render (Build)
+### R — Render (Test-Drive)
 
 **Tool:** Main agent (you)
-**Purpose:** Write tests first, then implement.
+**Purpose:** Turn the plan's test cases into passing code — no implementation before a failing test.
 
-Follow TDD strictly:
-1. Write a failing test that describes expected behavior
-2. Write the minimum implementation to make it pass
-3. Iterate — tests and implementation grow together
-4. Run lint, format, and type checks before moving on
+Conceptualize hands you test cases on paper. Render makes them real:
 
-**Key principle:** Don't write the implementation first and backfill tests. The test is the spec — if you can't write the test, you don't understand the requirement.
+1. **Red** — Write the failing test from the plan. If you can't write the test, go back to Conceptualize — you don't understand the requirement yet.
+2. **Green** — Write the minimum implementation to make it pass. No more.
+3. **Refactor** — Clean up without breaking green. Then repeat for the next test case.
+4. When all test cases pass: run lint, type checks, and format before moving on.
+
+TDD is not optional in this phase. Backfilling tests after implementation defeats the purpose — the test *is* the spec.
 
 ### A — Assess (Review)
 
