@@ -2,13 +2,13 @@
 
 Reusable commands, skills, and workflows for [Claude Code](https://claude.ai/claude-code).
 
-## KICKOFF: From Idea to Executing CRAFTS
+## ORACLE: From Idea to Executing CRAFTS
 
 Before writing code, there's a process for taking a raw idea to a properly scaffolded project:
 
-**Riff → Red-Team → Refine → Spec → Skill Map → Init → Task List → Execute**
+**Originate > Red-Team > Amend > Constitution > Layout > Equip**
 
-See [KICKOFF.md](KICKOFF.md) for the full process.
+See [ORACLE.md](ORACLE.md) for the full process.
 
 ## CRAFTS Workflow
 
