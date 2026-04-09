@@ -6,7 +6,7 @@ Reusable commands, skills, and workflows for [Claude Code](https://claude.ai/cla
 
 Before writing code, there's a process for taking a raw idea to a properly scaffolded project:
 
-**Originate > Red-Team > Amend > Constitution > Layout > Equip**
+**Originate > Red-Team > Amend > Constitution > Layout > Execute**
 
 See [ORACLE.md](ORACLE.md) for the full process.
 

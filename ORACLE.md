@@ -1,8 +1,8 @@
 # ORACLE: From Idea to Executing CRAFTS
 
-**Originate > Red-Team > Amend > Constitution > Layout > Equip**
+**Originate > Red-Team > Amend > Constitution > Layout > Execute**
 
-A repeatable process for taking a raw idea to a properly scaffolded project — before you write a single line of code.
+A repeatable process for taking a raw idea all the way through to shipping — idea to spec to scaffolded project to running CRAFTS.
 
 ---
 
@@ -10,7 +10,7 @@ A repeatable process for taking a raw idea to a properly scaffolded project — 
 
 Most projects fail in the first hour — not because of bad code, but because of bad thinking. Jumping straight from idea to implementation skips the steps that surface wrong assumptions, missing requirements, and architectural decisions that are cheap to change on paper and expensive to change in code.
 
-ORACLE is the process that runs before CRAFTS begins.
+ORACLE doesn't hand off to CRAFTS — it ends with CRAFTS already running.
 
 ---
 
@@ -105,10 +105,10 @@ Save as `specs/skill-map.md`.
 
 ---
 
-### E — Equip
+### E — Execute
 
-**Tool:** Claude (init) + Claude Opus (task list)
-**Purpose:** Load the agent's environment with everything it needs to start executing — context, skills, and a durable plan.
+**Tool:** Claude (init) + Claude Opus (task list) + CRAFTS
+**Purpose:** Initialize the environment, build the task list, and start shipping — Execute is where ORACLE ends and CRAFTS begins running.
 
 **1. Initialize the project context**
 
@@ -135,21 +135,17 @@ Hand Claude Opus the spec and ask it to produce a thorough, phased task list:
 - [ ] Build Y
 ```
 
-The task list persists across sessions — it's your single source of truth for what's done and what's next.
+**3. Run CRAFTS**
 
-**Goal:** A project Claude can navigate from the first conversation, with a durable task list that survives context resets.
-
----
-
-## Handoff to CRAFTS
-
-Pick the first unchecked task from `specs/tasks.md` and run it through the CRAFTS flow:
+Pick the first unchecked task from `specs/tasks.md` and execute it through the full CRAFTS flow:
 
 **Conceptualize → Render → Assess → Fix → Tighten → Sharpen**
 
-Check off tasks as they complete. Update domain `CLAUDE.md` files during the Sharpen phase.
+Check off tasks as they complete. Update domain `CLAUDE.md` files during the Sharpen phase. Repeat until shipped.
 
 See [CRAFTS.md](CRAFTS.md) for the full workflow.
+
+**Goal:** A running project — not a ready-to-start one.
 
 ---
 
@@ -182,7 +178,7 @@ Constitution  →  specs/spec.md
    ↓
 Layout        →  specs/skill-map.md
    ↓
-Equip         →  CLAUDE.md + skills + specs/tasks.md
+Execute       →  CLAUDE.md + skills + specs/tasks.md + CRAFTS running
    ↓
-CRAFTS        →  Shipped software
+              →  Shipped software
 ```
