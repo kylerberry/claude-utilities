@@ -1,3 +1,14 @@
+---
+description: >-
+  Phase-gate execution workflow for non-trivial tasks. Use the full flow
+  (C→R→A→F→T→S) for business logic, multi-file work, and domain-boundary
+  changes. Use the lite flow (R→S) for config, scaffolding, and simple
+  single-file fixes.
+argument-hint: Optional mode, such as "full" or "lite"
+icon: Hammer
+command: craft
+---
+
 # CRAFTS Workflow Skill
 
 ## When to use

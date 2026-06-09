@@ -1,3 +1,14 @@
+---
+description: >-
+  Human-in-the-loop gating during the R-Render phase of /craft. Use when the
+  current issue slice explicitly requires a human to implement or choose the
+  critical decision-bearing logic. This is the only required HITL gate in the
+  CRAFTS workflow.
+argument-hint: Optional context about the decision seam, such as a file, function, or design question
+icon: Hand
+command: craft-hitl
+---
+
 # CRAFTS HITL Gating Skill
 
 ## When to use
