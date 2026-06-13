@@ -1,4 +1,4 @@
-# Claude Utilities
+# Agent Utilities
 
 A skill-based toolkit for building software with AI coding agents — installable slash commands and primary agents that enforce disciplined, repeatable workflows.
 
