@@ -1,73 +1,144 @@
 ---
 description: >-
-  Human-in-the-loop gating during the R-Render phase of /craft. Use when the
-  current issue slice explicitly requires a human to implement or choose the
-  critical decision-bearing logic. This is the only required HITL gate in the
-  CRAFTS workflow.
-argument-hint: Optional context about the decision seam, such as a file, function, or design question
+  Phase-gate execution workflow for non-trivial HITL tasks. Same full flow
+  (C→R→A→F→T→S) as /craft, but includes mandatory human-in-the-loop gating at
+  TODO(human) seams during Render.
+argument-hint: Optional mode, such as "full" or "lite"
 icon: Hand
 command: craft-hitl
 ---
 
-# CRAFTS HITL Gating Skill
+# CRAFTS HITL Workflow Skill
 
 ## When to use
 
-Invoke this skill during the **R — Render** phase of `/craft` when the current issue slice explicitly requires a human to implement or choose the critical decision-bearing logic. This is the only required human-in-the-loop gate in the CRAFTS workflow.
+Invoke this skill for issue slices explicitly labeled **HITL implementation** or **HITL design/review**, or any task where the PRD reserves a critical decision for human judgment.
+
+This is the same CRAFTS phase-gate workflow as `/craft`, but the **R — Render** phase includes mandatory human-in-the-loop gating. The agent scaffolds to the seam, pauses for human input, then resumes and completes the remaining phases.
+
+If the task is unambiguously autonomous, use `/craft` instead.
 
 ## Overview
 
-The HITL (Human-In-The-Loop) gate is a sub-phase of **R — Render**. When the issue slice is labeled HITL, the agent scaffolds and tests up to the critical logic, leaves exactly one `TODO(human)` marker at the decision point, then pauses. The human fills the critical logic; the agent resumes verification and completion.
+CRAFTS is a sequential phase-gate workflow. Do not plan or execute phases in parallel per feature or issue; finish the current phase before moving to the next one.
 
-This gate exists within Render, not alongside it. After the human responds, the agent continues the Render phase (remaining tests, implementation, refactor) before proceeding to Assess.
+In HITL mode, the Render phase contains a mandatory pause. The human owns the critical decision-bearing logic; the agent owns everything before and after it.
 
-## HITL Render Flow
+Each phase should be delegated to its matching global subagent when the AgentSpawn tool is available. Spawn exactly one phase subagent at a time, wait for its report, then either proceed to the next phase, fix blockers, or ask the user for clarification. Do not run CRAFTS subagents in parallel.
 
-### Pause
+When exact per-spawn model selection is available, the R/F builder and A evaluator must run on different but equal-capability models. For example, if `craft-builder` runs on one frontier/coding-capable model, spawn `craft-evaluator` on a different peer model rather than the same model family. If the runtime only supports tier aliases, keep both at `medium` and explicitly note that exact model diversity could not be enforced in the phase report.
 
-Determine whether the current issue requires a HITL gate.
+| Phase | Subagent | Purpose |
+| --- | --- | --- |
+| C — Conceptualize | `craft-planner` | Planning, TDD strategy, scope, risks, and gates |
+| R — Render | `craft-builder` | Test-driven implementation and build guidance |
+| A — Assess | `craft-evaluator` | Simplification, correctness, type safety, and verification review |
+| F — Fix | `craft-builder` | Minimal fixes for blocking findings |
+| T — Tighten | `craft-security` | Security and trust-boundary review |
+| S — Sharpen | `craft-sharpener` | Durable documentation, product alignment, and retained learnings |
 
-**Pause when:**
+## Full Flow: C → R → A → F → T → S
 
-- The issue slice is labeled **HITL implementation** — the agent scaffolds/tests, human owns the critical logic.
-- The issue slice is labeled **HITL design/review** — implementation is agent-driven but requires human taste/content/design review.
-- The critical logic involves a subjective choice (naming, UX copy, visual design, algorithmic trade-off) that the PRD or issue plan explicitly reserves for human judgment.
-- The agent cannot meaningfully proceed without a decision that only the human can make.
+### C — Conceptualize
 
-**Do NOT pause when:**
+Define scope, test cases, implementation plan, and risks before coding.
 
-- Routine refactoring, formatting, or test fixes.
-- Clear-cut implementation where the acceptance criteria are unambiguous.
-- Decisions that the agent can reasonably infer from the PRD or existing code patterns.
+Use AgentSpawn with `subagent_type: "craft-planner"` for this phase when available. Pass the user request, relevant issue slice, repository constraints, and any known HITL seams. Use its report as the gate artifact before moving to Render.
 
-### Scaffold
+- Read the relevant issue slice or user request thoroughly.
+- Identify whether the work is AFK (agent can complete solo) or HITL (requires human at a critical seam).
+- If multi-step, create or update a todo list before coding.
+- Produce: scope boundary, acceptance criteria, file list, test strategy, and risk assessment.
+- Stop here if the plan is unclear — do not proceed to Render with ambiguous requirements.
 
-Write all code up to but not including the critical logic. Write the surrounding tests, types, and structure.
+### R — Render (Test-Drive with HITL Gate)
 
+Write failing tests first, then implement up to the critical seam, pause for human input, then complete implementation and refactor.
+
+Use AgentSpawn with `subagent_type: "craft-builder"` for this phase when available. Pass the C phase report and ask for test-first implementation guidance. When exact model selection is available, choose a model that has an equal-capability but different-model peer available for the later `craft-evaluator` spawn. Execute the implementation sequentially in the parent context after reviewing the subagent report.
+
+#### Red
+Write the failing test from the plan. If you can't write it, return to Conceptualize.
+
+#### Green (up to the seam)
+Write the minimum implementation to pass, **stopping before the critical human-owned logic**.
+
+- Scaffold all surrounding code: types, tests, structure, and wiring.
 - Leave exactly one `TODO(human)` marker at the critical decision point. Make it specific:
   - Bad: `// TODO(human): implement this`
   - Good: `// TODO(human): decide the threshold for todo_filled — should we require marker removal, or is a substantive edit sufficient?`
 - Summarize the context: tell the human what has been scaffolded, what decision is needed, and what the acceptance criteria are.
-- Stop processing. Do not write code past the `TODO(human)` marker.
+- **Stop processing.** Do not write code past the `TODO(human)` marker.
 
-### Resume
+#### Human fill
+Wait for the human to implement the critical logic and signal readiness.
 
-After the human fills the `TODO(human)` marker and signals readiness:
+#### Green (after the seam)
+After the human responds:
 
 1. **Read the human's implementation** carefully. Do not assume it matches what you would have written.
 2. **Run the tests** scoped to the changed area. Fix any test failures caused by integration mismatches.
-3. **Continue Render:** complete any remaining implementation, run the full test suite.
-4. **Remove the `TODO(human)` marker** from comments once the seam is filled and verified.
+3. Complete any remaining implementation to make the full test suite pass.
+4. **Remove the `TODO(human)` marker** once the seam is filled and verified.
 
-### Return
+#### Refactor
+Clean up without breaking green. Repeat for each test case.
 
-Return to the `/craft` full flow at the point where you left off:
+- Run lint, type checks, and format when all tests pass.
+- If the slice requires a `TODO(human)` seam, pause for human input before continuing.
 
-- If you were mid-Render, finish Render (remaining tests, implementation, refactor).
-- If Render is complete, proceed to **A — Assess**.
-- `C`, `A`, `F`, `T`, and `S` remain agent-driven unless the human explicitly chooses to pause for review.
+### A — Assess
+
+Review the diff for quality, reuse, efficiency, and type correctness.
+
+Use AgentSpawn with `subagent_type: "craft-evaluator"` for this phase when available. Pass the task goal, CRAFTS plan, changed files, verification evidence, and the model used for `craft-builder`. When exact model selection is available, use a different but equal-capability model from the builder; if only tier aliases are available, keep `medium` and record the limitation. Treat blocking findings as inputs to Fix.
+
+- Check for duplicated logic, missed edge cases, unclear naming.
+- Verify type safety if applicable.
+- Verify the HITL seam integrates cleanly with the surrounding agent-scaffolded code.
+- Flag anything that should be fixed before proceeding.
+
+### F — Fix
+
+Address blocking issues from Assess. Re-run quality checks.
+
+Use AgentSpawn with `subagent_type: "craft-builder"` for this phase when available. Pass only the blocking findings and relevant context so fixes remain minimal and scoped.
+
+- High and medium severity first.
+- Disagree with a finding? Document why instead of blindly fixing.
+
+### T — Tighten
+
+Run the security-hardening review for the diff and fix findings.
+
+Use AgentSpawn with `subagent_type: "craft-security"` for this phase when available. Pass the task goal, changed files, verification output, and any trust boundaries identified during Conceptualize or Render.
+
+- Scan for injection risks, unsafe defaults, exposed secrets.
+- Verify boundary enforcement where applicable.
+- Pay special attention to the HITL seam: does the human-owned logic introduce any trust boundary issues?
+
+### S — Sharpen
+
+Capture durable lessons, gotchas, process updates, and any documentation changes so repo docs stay evergreen and aligned to code.
+
+Use AgentSpawn with `subagent_type: "craft-sharpener"` for this phase when available. Pass the final diff summary, verification results, issue status, and any conventions or gotchas discovered during the task.
+
+- Document the HITL seam and the rationale for the human-owned decision.
+- Update the relevant domain docs (README, ADR, CLAUDE.md, PRD, ISSUES) with patterns established, gotchas discovered, conventions set during this task.
+- Commit and push if applicable.
+
+## Lite Flow: R → S
+
+For simple HITL tasks (config changes, single-file fixes with one obvious seam):
+
+1. **R — Render:** scaffold to the seam, pause for human input, complete, verify.
+2. **S — Sharpen:** capture any doc updates and commit.
+
+Start lite, then escalate to full if the task grows or the seam is more complex than expected.
 
 ## Escalation Rules
 
-- If a task starts as HITL but the human defers the decision back to the agent, treat it as AFK and complete autonomously.
-- If a task starts as AFK but the agent discovers a subjective decision the PRD did not anticipate, pause and invoke this skill.
+- Start lite. If the task grows beyond a single file or the HITL seam has ripple effects, escalate to full.
+- Never skip Assess and Tighten on code that crosses a trust boundary or handles user input.
+- If a task starts as HITL but the human defers the decision back to the agent, switch to `/craft` and complete autonomously.
+- If Render reaches a `TODO(human)` seam, pause for human input before continuing.

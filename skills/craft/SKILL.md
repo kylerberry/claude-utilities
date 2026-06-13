@@ -21,14 +21,29 @@ Start lite, then escalate to full if the task grows.
 
 CRAFTS is a sequential phase-gate workflow. Do not plan or execute phases in parallel per feature or issue; finish the current phase before moving to the next one.
 
+Each phase should be delegated to its matching global subagent when the AgentSpawn tool is available. Spawn exactly one phase subagent at a time, wait for its report, then either proceed to the next phase, fix blockers, or ask the user for clarification. Do not run CRAFTS subagents in parallel.
+
+When exact per-spawn model selection is available, the R/F builder and A evaluator must run on different but equal-capability models. For example, if `craft-builder` runs on one frontier/coding-capable model, spawn `craft-evaluator` on a different peer model rather than the same model family. If the runtime only supports tier aliases, keep both at `medium` and explicitly note that exact model diversity could not be enforced in the phase report.
+
+| Phase | Subagent | Purpose |
+| --- | --- | --- |
+| C — Conceptualize | `craft-planner` | Planning, TDD strategy, scope, risks, and gates |
+| R — Render | `craft-builder` | Test-driven implementation and build guidance |
+| A — Assess | `craft-evaluator` | Simplification, correctness, type safety, and verification review |
+| F — Fix | `craft-builder` | Minimal fixes for blocking findings |
+| T — Tighten | `craft-security` | Security and trust-boundary review |
+| S — Sharpen | `craft-sharpener` | Durable documentation, product alignment, and retained learnings |
+
 ## Full Flow: C → R → A → F → T → S
 
 ### C — Conceptualize
 
 Define scope, test cases, implementation plan, and risks before coding.
 
+Use AgentSpawn with `subagent_type: "craft-planner"` for this phase when available. Pass the user request, relevant issue slice, repository constraints, and any known blockers or ambiguities. Use its report as the gate artifact before moving to Render.
+
 - Read the relevant issue slice or user request thoroughly.
-- Identify whether the work is AFK (agent can complete solo) or HITL (requires human at a critical seam).
+- Determine task complexity, scope boundaries, and whether the plan is fully actionable within the current context.
 - If multi-step, create or update a todo list before coding.
 - Produce: scope boundary, acceptance criteria, file list, test strategy, and risk assessment.
 - Stop here if the plan is unclear — do not proceed to Render with ambiguous requirements.
@@ -37,15 +52,18 @@ Define scope, test cases, implementation plan, and risks before coding.
 
 Write failing tests first, then implement the minimum change to pass, then refactor.
 
+Use AgentSpawn with `subagent_type: "craft-builder"` for this phase when available. Pass the C phase report and ask for test-first implementation guidance. When exact model selection is available, choose a model that has an equal-capability but different-model peer available for the later `craft-evaluator` spawn. Execute the implementation sequentially in the parent context after reviewing the subagent report.
+
 - **Red:** write the failing test from the plan. If you can't write it, return to Conceptualize.
 - **Green:** write the minimum implementation to pass. No more.
 - **Refactor:** clean up without breaking green. Repeat for each test case.
 - Run lint, type checks, and format when all tests pass.
-- If the slice requires a `TODO(human)` seam, pause here and invoke the `/craft-hitl` skill.
 
 ### A — Assess
 
 Review the diff for quality, reuse, efficiency, and type correctness.
+
+Use AgentSpawn with `subagent_type: "craft-evaluator"` for this phase when available. Pass the task goal, CRAFTS plan, changed files, verification evidence, and the model used for `craft-builder`. When exact model selection is available, use a different but equal-capability model from the builder; if only tier aliases are available, keep `medium` and record the limitation. Treat blocking findings as inputs to Fix.
 
 - Check for duplicated logic, missed edge cases, unclear naming.
 - Verify type safety if applicable.
@@ -55,12 +73,16 @@ Review the diff for quality, reuse, efficiency, and type correctness.
 
 Address blocking issues from Assess. Re-run quality checks.
 
+Use AgentSpawn with `subagent_type: "craft-builder"` for this phase when available. Pass only the blocking findings and relevant context so fixes remain minimal and scoped.
+
 - High and medium severity first.
 - Disagree with a finding? Document why instead of blindly fixing.
 
 ### T — Tighten
 
 Run the security-hardening review for the diff and fix findings.
+
+Use AgentSpawn with `subagent_type: "craft-security"` for this phase when available. Pass the task goal, changed files, verification output, and any trust boundaries identified during Conceptualize or Render.
 
 - Scan for injection risks, unsafe defaults, exposed secrets.
 - Verify boundary enforcement where applicable.
@@ -69,6 +91,8 @@ Run the security-hardening review for the diff and fix findings.
 
 Capture durable lessons, gotchas, process updates, and any documentation changes so repo docs stay evergreen and aligned to code.
 
+Use AgentSpawn with `subagent_type: "craft-sharpener"` for this phase when available. Pass the final diff summary, verification results, issue status, and any conventions or gotchas discovered during the task.
+
 - Update the relevant domain docs (README, ADR, CLAUDE.md, PRD, ISSUES) with patterns established, gotchas discovered, conventions set during this task.
 - Commit and push if applicable.
 
@@ -76,11 +100,10 @@ Capture durable lessons, gotchas, process updates, and any documentation changes
 
 For config, scaffolding, and simple single-file fixes:
 
-1. **R — Render:** make the smallest correct change. Write or update tests if the codebase already has them.
-2. **S — Sharpen:** capture any doc updates and commit.
+1. **R — Render:** make the smallest correct change. Use `craft-builder` when AgentSpawn is available. Write or update tests if the codebase already has them.
+2. **S — Sharpen:** capture any doc updates and commit. Use `craft-sharpener` when AgentSpawn is available.
 
 ## Escalation Rules
 
 - Start lite. If the task grows beyond a single file or requires domain reasoning, escalate to full.
 - Never skip Assess and Tighten on code that crosses a trust boundary or handles user input.
-- If Render reaches a `TODO(human)` seam, invoke `/craft-hitl` and pause for human input before continuing.
